@@ -252,7 +252,8 @@
 
     <div class="container">
       <div class="search-section">
-        <input type="text" id="searchBox" class="search-box" placeholder="Search (Record ID)..." />
+        <!-- ✅ CHANGED: placeholder -->
+        <input type="text" id="searchBox" class="search-box" placeholder="Search (Company)..." />
         <div id="stats" class="stats">Loading data...</div>
       </div>
 
@@ -268,7 +269,6 @@
     // ==============================
     // CONFIG
     // ==============================
-    // ✅ Replace with your READ Lambda Function URL that returns: { items: [...], nextKey: {...}, total: 64107, mode: "scan"|"exact_record" }
     const READ_API_BASE_URL = "https://joggcs6iisqlsyjjxxebho7e540yajvo.lambda-url.us-east-1.on.aws/";
     const PAGE_SIZE = 50;
 
@@ -279,8 +279,6 @@
     let nextKey = null;
     let lastQuery = "";
     let isLoading = false;
-
-    // ✅ NEW: total count for better UX (comes from Lambda as payload.total)
     let totalCount = null;
 
     // ==============================
@@ -346,7 +344,6 @@
       document.getElementById("content").innerHTML = `<div class="loading">${message}</div>`;
     }
 
-    // ✅ NEW: skeleton loader
     function renderSkeleton() {
       const content = document.getElementById("content");
       content.innerHTML = `
@@ -374,7 +371,6 @@
       btn.textContent = loading ? "Loading..." : "Load more";
     }
 
-    // ✅ NEW: stats as range + total
     function updateStatsRange() {
       const stats = document.getElementById("stats");
       const loaded = allData.length;
@@ -414,6 +410,11 @@
         return;
       }
 
+      // ✅ NEW: sort by Company
+      records = [...records].sort((a, b) =>
+        String(a.Company || "").localeCompare(String(b.Company || ""))
+      );
+
       const grid = document.createElement("div");
       grid.className = "records-grid";
 
@@ -421,8 +422,8 @@
         const card = document.createElement("div");
         card.className = "record-card";
 
-        // Prefer Record as the title since that is your PK and guaranteed unique
-        const title = record.Record || record.record || `Record ${index + 1}`;
+        // ✅ CHANGED: use Company as title
+        const title = record.Company || record.company || `Company ${index + 1}`;
 
         let fieldsHtml = "";
 
@@ -466,7 +467,7 @@
           allData = [];
           nextKey = null;
           showLoadMoreButton(false);
-          renderSkeleton(); // ✅ skeleton on reset
+          renderSkeleton();
         }
 
         const params = new URLSearchParams();
@@ -488,15 +489,12 @@
         const items = Array.isArray(payload.items) ? payload.items : [];
         nextKey = payload.nextKey || null;
 
-        // ✅ new: keep total for UX
         if (typeof payload.total === "number") totalCount = payload.total;
 
-        // ✅ append + render
         allData = allData.concat(items);
         displayRecords(allData);
         updateStats();
 
-        // ✅ new: if exact record lookup, never show Load more
         if (payload.mode === "exact_record") {
           showLoadMoreButton(false);
         } else {
@@ -521,20 +519,17 @@
       fetchPage({ query: "", reset: true });
     }
 
-    // Search input: reset paging and fetch first page
     document.getElementById("searchBox").addEventListener("input", (e) => {
       lastQuery = e.target.value.trim();
       setLoadMoreLoading(false);
       fetchPage({ query: lastQuery, reset: true });
     });
 
-    // Load more button
     document.getElementById("loadMoreBtn").addEventListener("click", () => {
       setLoadMoreLoading(true);
       fetchPage({ query: lastQuery, reset: false });
     });
 
-    // INIT
     checkAuthState();
   </script>
 </body>
