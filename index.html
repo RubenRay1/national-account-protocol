@@ -200,7 +200,7 @@
     }
 
     /* ==============================
-       ✅ NEW: SKELETON LOADER STYLES
+       ✅ SKELETON LOADER STYLES
        ============================== */
     .skeleton-card {
       background: rgba(255,255,255,0.95);
@@ -252,7 +252,6 @@
 
     <div class="container">
       <div class="search-section">
-        <!-- ✅ CHANGED: placeholder -->
         <input type="text" id="searchBox" class="search-box" placeholder="Search (Company)..." />
         <div id="stats" class="stats">Loading data...</div>
       </div>
@@ -280,6 +279,109 @@
     let lastQuery = "";
     let isLoading = false;
     let totalCount = null;
+
+    // ==============================
+    // ✅ FIELD ORDER (Excel left→right = App top→bottom)
+    // Use normalized labels (no trailing spaces, no newlines)
+    // ==============================
+    const ORDERED_LABELS = [
+      "Company (Full Legal Name)",
+      "Industry",
+      "Customer Corporate Office Address",
+      "Customer Contacts",
+      "BMS Cat Account Manager",
+      "Agreement Type (RSA, MSA, Handshake)",
+      "Brands",
+      "Local Marketing Direction",
+      "Pricing/Rate Schedule ***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!",
+      "Rebate/Discount/Fee & General Agreement Details",
+      "Reason Why Customer is not under Preferred 2024 Rate Schedule (If Customer is currently under Preferred 2024 Rate Schedule, list \"N/A\")",
+      "National Adjuster",
+      "Chase Instructions",
+      "Key Differences",
+      "WHO should the Project Updates be sent to?",
+      "WHAT should be included in the Project Updates?",
+      "WHEN should the Project Updates be sent?",
+      "WHERE should the Project Updates be sent?",
+      "WHO should provide the Work Authorization?",
+      "WHAT type of Work Authorization should be obtained?",
+      "WHEN should the Work Authorization be obtained?",
+      "WHERE should the Work Authorization be sent?",
+      "WHO should the Scope of Work/Estimate be sent to?",
+      "WHAT should be included in the Scope of Work/Estimate?",
+      "WHEN should the Scope of Work/Estimate be sent?",
+      "WHERE should the Scope of Work/Estimate be sent?",
+      "WHO should sign our SOWC/COC/Work Complete Form?",
+      "WHAT type of  SOWC/COC/Work Complete Form should be obtained?",
+      "WHEN should the SOWC/COC/Work Complete Form be obtained?",
+      "WHERE should the SOWC/COC/Work Complete Form be sent?",
+      "WHO should create the Invoice Packet?",
+      "WHAT should be included when the Invoice Packet is created?",
+      "WHEN should the Invoice Packet be created?",
+      "WHERE should the Invoice Packet be sent once it's created?",
+      "WHO should send the completed Invoice Packet to the Customer?",
+      "WHAT should be included with the completed Invoice Packet to the Customer?",
+      "WHEN should the completed Invoice Packet be sent to the Customer?",
+      "WHERE should the completed Invoice Packet be sent?",
+      "Payment Terms",
+      "WHO should attempt initial collection?",
+      "WHAT should be sent to attempt initial collection?",
+      "WHEN should the initial collection take place?",
+      "WHERE should the initial collection be directed to?",
+      "WHO should attempt secondary collection?",
+      "WHAT should be sent to attempt secondary collection?",
+      "WHEN should the secondary collection take place?",
+      "WHERE should the secondary collection be directed to?",
+      "WHO should attempt final collection?",
+      "WHAT should be sent to attempt final collection?",
+      "WHEN should the final collection take place?",
+      "WHERE should the final collection be directed to?",
+      "Specific Account Protocols",
+    ];
+
+    // Normalize keys from DynamoDB (handles trailing spaces + newlines)
+    function normalizeKey(k) {
+      return String(k)
+        .replace(/\r?\n+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function isNonEmpty(v) {
+      return v !== null && v !== undefined && String(v).trim() !== "";
+    }
+
+    // Build map: normalizedKey -> realKey
+    function buildKeyMap(record) {
+      const map = new Map();
+      Object.keys(record).forEach((realKey) => {
+        const norm = normalizeKey(realKey);
+        if (!map.has(norm)) map.set(norm, realKey);
+      });
+
+      // aliases so Company works even if only one exists
+      if (map.has("Company (Full Legal Name)") && !map.has("Company")) {
+        map.set("Company", map.get("Company (Full Legal Name)"));
+      }
+      if (map.has("Company") && !map.has("Company (Full Legal Name)")) {
+        map.set("Company (Full Legal Name)", map.get("Company"));
+      }
+
+      // fix Excel label vs Dynamo label for Agreement Type (newline in source)
+      // Dynamo normalizes "Agreement Type (RSA, MSA, Handshake)" from "Agreement Type\n(RSA, MSA, Handshake)"
+      if (!map.has("Agreement Type (RSA, MSA, Handshake)")) {
+        const tryKey = "Agreement Type (RSA, MSA, Handshake)";
+        // nothing else needed—normalizeKey will usually already find it
+      }
+
+      // fix Excel label vs Dynamo label for Pricing/Rate Schedule (newline in source)
+      // Dynamo normalizes from "Pricing/Rate Schedule\n***..." -> "Pricing/Rate Schedule ***..."
+      if (!map.has("Pricing/Rate Schedule ***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!")) {
+        // nothing else needed—normalizeKey will usually already find it
+      }
+
+      return map;
+    }
 
     // ==============================
     // AUTH (unchanged)
@@ -388,19 +490,13 @@
       updateStatsRange();
     }
 
-    function formatFieldName(key) {
-      return key.replace(/_/g, " ")
-        .replace(/\b\w/g, l => l.toUpperCase())
-        .replace(/unnamed/gi, "Field");
-    }
-
     function toggleCard(header) {
       const card = header.parentElement;
       card.classList.toggle("expanded");
     }
 
     // ==============================
-    // RENDER
+    // ✅ RENDER (ordered like Excel)
     // ==============================
     function displayRecords(records) {
       const content = document.getElementById("content");
@@ -410,10 +506,19 @@
         return;
       }
 
-      // ✅ NEW: sort by Company
-      records = [...records].sort((a, b) =>
-        String(a.Company || "").localeCompare(String(b.Company || ""))
-      );
+      // Sort cards by Company name (prefer Full Legal Name)
+      records = [...records].sort((a, b) => {
+        const am = buildKeyMap(a);
+        const bm = buildKeyMap(b);
+
+        const aNameKey = am.get("Company (Full Legal Name)") || am.get("Company");
+        const bNameKey = bm.get("Company (Full Legal Name)") || bm.get("Company");
+
+        const aName = aNameKey ? String(a[aNameKey] || "") : "";
+        const bName = bNameKey ? String(b[bNameKey] || "") : "";
+
+        return aName.localeCompare(bName);
+      });
 
       const grid = document.createElement("div");
       grid.className = "records-grid";
@@ -422,20 +527,52 @@
         const card = document.createElement("div");
         card.className = "record-card";
 
-        // ✅ CHANGED: use Company as title
-        const title = record.Company || record.company || `Company ${index + 1}`;
+        const keyMap = buildKeyMap(record);
+
+        // Card Title
+        const titleKey =
+          keyMap.get("Company (Full Legal Name)") ||
+          keyMap.get("Company");
+
+        const title = titleKey && isNonEmpty(record[titleKey])
+          ? String(record[titleKey])
+          : `Company ${index + 1}`;
 
         let fieldsHtml = "";
+        const usedRealKeys = new Set();
 
-        Object.keys(record).forEach(key => {
-          const value = record[key];
-          if (value !== null && value !== undefined && String(value).trim() !== "") {
-            const displayValue = Array.isArray(value) ? value.join(", ") : String(value);
-            fieldsHtml += `
-              <div class="field-label">${formatFieldName(key)}</div>
-              <div class="field-value">${displayValue}</div>
-            `;
-          }
+        // Render fields in Excel order (top→bottom)
+        for (const label of ORDERED_LABELS) {
+          const realKey = keyMap.get(label);
+          if (!realKey) continue;
+
+          const value = record[realKey];
+          if (!isNonEmpty(value)) continue;
+
+          usedRealKeys.add(realKey);
+
+          const displayValue = Array.isArray(value) ? value.join(", ") : String(value);
+
+          fieldsHtml += `
+            <div class="field-label">${label}</div>
+            <div class="field-value">${displayValue}</div>
+          `;
+        }
+
+        // Optional: show any extra fields not in Excel order, at bottom
+        Object.keys(record).forEach((realKey) => {
+          if (usedRealKeys.has(realKey)) return;
+
+          const value = record[realKey];
+          if (!isNonEmpty(value)) return;
+
+          const label = normalizeKey(realKey);
+          const displayValue = Array.isArray(value) ? value.join(", ") : String(value);
+
+          fieldsHtml += `
+            <div class="field-label">${label}</div>
+            <div class="field-value">${displayValue}</div>
+          `;
         });
 
         card.innerHTML = `
@@ -522,13 +659,13 @@
     let searchTimer = null;
 
     document.getElementById("searchBox").addEventListener("input", (e) => {
-    lastQuery = e.target.value.trim();
+      lastQuery = e.target.value.trim();
 
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
         setLoadMoreLoading(false);
         fetchPage({ query: lastQuery, reset: true });
-    }, 250);
+      }, 250);
     });
 
     document.getElementById("loadMoreBtn").addEventListener("click", () => {
