@@ -110,6 +110,7 @@
       border-bottom: 1px solid #f0f0f0;
       word-break: break-word;
       line-height: 1.5;
+      white-space: pre-wrap; /* ✅ keeps newlines readable */
     }
 
     .no-results {
@@ -199,9 +200,6 @@
       font-size: 0.9rem;
     }
 
-    /* ==============================
-       ✅ SKELETON LOADER STYLES
-       ============================== */
     .skeleton-card {
       background: rgba(255,255,255,0.95);
       border-radius: 16px;
@@ -230,7 +228,6 @@
   </style>
 </head>
 <body>
-  <!-- Authentication Screen -->
   <div id="authScreen" class="auth-container">
     <div class="auth-card">
       <h1>National Account Protocol <span class="bms-badge">BMS</span></h1>
@@ -239,7 +236,6 @@
     </div>
   </div>
 
-  <!-- Main Application -->
   <div id="mainApp" class="hidden">
     <div class="header">
       <div class="user-info">
@@ -271,29 +267,17 @@
     const READ_API_BASE_URL = "https://joggcs6iisqlsyjjxxebho7e540yajvo.lambda-url.us-east-1.on.aws/";
     const PAGE_SIZE = 50;
 
-    // ==============================
-    // STATE
-    // ==============================
-    let allData = [];
-    let nextKey = null;
-    let lastQuery = "";
-    let isLoading = false;
-    let totalCount = null;
-
-    // ==============================
-    // ✅ FIELD ORDER (Excel left→right = App top→bottom)
-    // Use normalized labels (no trailing spaces, no newlines)
-    // ==============================
-    const ORDERED_LABELS = [
+    // ✅ EXACT Excel column order (left → right), rendered top → bottom in the app
+    const FIELD_ORDER = [
       "Company (Full Legal Name)",
       "Industry",
       "Customer Corporate Office Address",
       "Customer Contacts",
       "BMS Cat Account Manager",
-      "Agreement Type (RSA, MSA, Handshake)",
+      "Agreement Type\n(RSA, MSA, Handshake)",
       "Brands",
       "Local Marketing Direction",
-      "Pricing/Rate Schedule ***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!",
+      "Pricing/Rate Schedule\n***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!",
       "Rebate/Discount/Fee & General Agreement Details",
       "Reason Why Customer is not under Preferred 2024 Rate Schedule (If Customer is currently under Preferred 2024 Rate Schedule, list \"N/A\")",
       "National Adjuster",
@@ -312,7 +296,7 @@
       "WHEN should the Scope of Work/Estimate be sent?",
       "WHERE should the Scope of Work/Estimate be sent?",
       "WHO should sign our SOWC/COC/Work Complete Form?",
-      "WHAT type of  SOWC/COC/Work Complete Form should be obtained?",
+      "WHAT type of SOWC/COC/Work Complete Form should be obtained?",
       "WHEN should the SOWC/COC/Work Complete Form be obtained?",
       "WHERE should the SOWC/COC/Work Complete Form be sent?",
       "WHO should create the Invoice Packet?",
@@ -336,52 +320,17 @@
       "WHAT should be sent to attempt final collection?",
       "WHEN should the final collection take place?",
       "WHERE should the final collection be directed to?",
-      "Specific Account Protocols",
+      "Specific Account Protocols"
     ];
 
-    // Normalize keys from DynamoDB (handles trailing spaces + newlines)
-    function normalizeKey(k) {
-      return String(k)
-        .replace(/\r?\n+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function isNonEmpty(v) {
-      return v !== null && v !== undefined && String(v).trim() !== "";
-    }
-
-    // Build map: normalizedKey -> realKey
-    function buildKeyMap(record) {
-      const map = new Map();
-      Object.keys(record).forEach((realKey) => {
-        const norm = normalizeKey(realKey);
-        if (!map.has(norm)) map.set(norm, realKey);
-      });
-
-      // aliases so Company works even if only one exists
-      if (map.has("Company (Full Legal Name)") && !map.has("Company")) {
-        map.set("Company", map.get("Company (Full Legal Name)"));
-      }
-      if (map.has("Company") && !map.has("Company (Full Legal Name)")) {
-        map.set("Company (Full Legal Name)", map.get("Company"));
-      }
-
-      // fix Excel label vs Dynamo label for Agreement Type (newline in source)
-      // Dynamo normalizes "Agreement Type (RSA, MSA, Handshake)" from "Agreement Type\n(RSA, MSA, Handshake)"
-      if (!map.has("Agreement Type (RSA, MSA, Handshake)")) {
-        const tryKey = "Agreement Type (RSA, MSA, Handshake)";
-        // nothing else needed—normalizeKey will usually already find it
-      }
-
-      // fix Excel label vs Dynamo label for Pricing/Rate Schedule (newline in source)
-      // Dynamo normalizes from "Pricing/Rate Schedule\n***..." -> "Pricing/Rate Schedule ***..."
-      if (!map.has("Pricing/Rate Schedule ***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!")) {
-        // nothing else needed—normalizeKey will usually already find it
-      }
-
-      return map;
-    }
+    // ==============================
+    // STATE
+    // ==============================
+    let allData = [];
+    let nextKey = null;
+    let lastQuery = "";
+    let isLoading = false;
+    let totalCount = null;
 
     // ==============================
     // AUTH (unchanged)
@@ -440,8 +389,36 @@
     });
 
     // ==============================
-    // UI HELPERS
+    // HELPERS
     // ==============================
+
+    // ✅ Normalizes keys so we match weird JSON keys like "Brands         " or extra newlines
+    function normalizeKey(s) {
+      return String(s ?? "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\s+/g, " ")   // collapse whitespace
+        .replace(/\s*\n\s*/g, "\n") // keep \n but remove spaces around it
+        .trim();
+    }
+
+    function buildKeyMap(record) {
+      const map = new Map(); // normalized -> original
+      Object.keys(record || {}).forEach(k => {
+        map.set(normalizeKey(k), k);
+      });
+      return map;
+    }
+
+    function getCompanyTitle(record) {
+      // Prefer "Company" (short) then fall back to "Company (Full Legal Name)"
+      return (
+        record.Company ||
+        record.company ||
+        record["Company (Full Legal Name)"] ||
+        "Company"
+      );
+    }
+
     function setLoading(message) {
       document.getElementById("content").innerHTML = `<div class="loading">${message}</div>`;
     }
@@ -490,13 +467,18 @@
       updateStatsRange();
     }
 
+    // ✅ Keep labels as-is (Excel headers), just clean spacing
+    function prettyLabel(label) {
+      return normalizeKey(label);
+    }
+
     function toggleCard(header) {
       const card = header.parentElement;
       card.classList.toggle("expanded");
     }
 
     // ==============================
-    // ✅ RENDER (ordered like Excel)
+    // RENDER
     // ==============================
     function displayRecords(records) {
       const content = document.getElementById("content");
@@ -506,19 +488,10 @@
         return;
       }
 
-      // Sort cards by Company name (prefer Full Legal Name)
-      records = [...records].sort((a, b) => {
-        const am = buildKeyMap(a);
-        const bm = buildKeyMap(b);
-
-        const aNameKey = am.get("Company (Full Legal Name)") || am.get("Company");
-        const bNameKey = bm.get("Company (Full Legal Name)") || bm.get("Company");
-
-        const aName = aNameKey ? String(a[aNameKey] || "") : "";
-        const bName = bNameKey ? String(b[bNameKey] || "") : "";
-
-        return aName.localeCompare(bName);
-      });
+      // ✅ sort by the same title field the cards use
+      records = [...records].sort((a, b) =>
+        String(getCompanyTitle(a)).localeCompare(String(getCompanyTitle(b)))
+      );
 
       const grid = document.createElement("div");
       grid.className = "records-grid";
@@ -527,51 +500,37 @@
         const card = document.createElement("div");
         card.className = "record-card";
 
+        const title = getCompanyTitle(record);
+
+        // Build a map so FIELD_ORDER matches record keys even if spacing/newlines differ
         const keyMap = buildKeyMap(record);
 
-        // Card Title
-        const titleKey =
-          keyMap.get("Company (Full Legal Name)") ||
-          keyMap.get("Company");
-
-        const title = titleKey && isNonEmpty(record[titleKey])
-          ? String(record[titleKey])
-          : `Company ${index + 1}`;
+        // ✅ Prevent duplicates in the body (the title already shows these)
+        const excludedNormalizedKeys = new Set([
+          normalizeKey("Company"),
+          normalizeKey("company")
+        ]);
 
         let fieldsHtml = "";
-        const usedRealKeys = new Set();
 
-        // Render fields in Excel order (top→bottom)
-        for (const label of ORDERED_LABELS) {
-          const realKey = keyMap.get(label);
-          if (!realKey) continue;
+        // ✅ Render strictly in Excel order
+        FIELD_ORDER.forEach(label => {
+          const normalizedLabel = normalizeKey(label);
+          const originalKey = keyMap.get(normalizedLabel);
 
-          const value = record[realKey];
-          if (!isNonEmpty(value)) continue;
+          if (!originalKey) return; // field not present in this record
 
-          usedRealKeys.add(realKey);
+          if (excludedNormalizedKeys.has(normalizedLabel)) return;
 
-          const displayValue = Array.isArray(value) ? value.join(", ") : String(value);
+          const value = record[originalKey];
+          if (value === null || value === undefined) return;
 
-          fieldsHtml += `
-            <div class="field-label">${label}</div>
-            <div class="field-value">${displayValue}</div>
-          `;
-        }
-
-        // Optional: show any extra fields not in Excel order, at bottom
-        Object.keys(record).forEach((realKey) => {
-          if (usedRealKeys.has(realKey)) return;
-
-          const value = record[realKey];
-          if (!isNonEmpty(value)) return;
-
-          const label = normalizeKey(realKey);
-          const displayValue = Array.isArray(value) ? value.join(", ") : String(value);
+          const str = Array.isArray(value) ? value.join(", ") : String(value);
+          if (str.trim() === "") return;
 
           fieldsHtml += `
-            <div class="field-label">${label}</div>
-            <div class="field-value">${displayValue}</div>
+            <div class="field-label">${prettyLabel(label)}</div>
+            <div class="field-value">${str}</div>
           `;
         });
 
