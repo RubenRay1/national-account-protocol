@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Initialize DynamoDB
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('bms-national-account-property-ddb')
+table = dynamodb.Table('bms-national-account-protocol-ddb')
 
 def scan_table():
     """Scan entire DynamoDB table and return all items"""

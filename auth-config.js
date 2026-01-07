@@ -2,10 +2,10 @@
 const awsConfig = {
     Auth: {
         region: 'us-east-1',
-        userPoolId: 'us-east-1_RyGcnq6VR',
-        userPoolWebClientId: '7mck7388jk5brrc602do008kor',
+        userPoolId: 'us-east-1_6K0VXKjt1',
+        userPoolWebClientId: '7si5kk2t9t24nrtgkumc2n6ops',
         oauth: {
-            domain: 'bms-customer-lookup-auth.auth.us-east-1.amazoncognito.com',
+            domain: 'national-account-protocol.auth.us-east-1.amazoncognito.com',
             scope: ['email', 'openid', 'profile'],
             redirectSignIn: window.location.origin + '/',
             redirectSignOut: window.location.origin + '/',
