@@ -519,10 +519,16 @@
       fetchPage({ query: "", reset: true });
     }
 
+let searchTimer = null;
+
     document.getElementById("searchBox").addEventListener("input", (e) => {
-      lastQuery = e.target.value.trim();
-      setLoadMoreLoading(false);
-      fetchPage({ query: lastQuery, reset: true });
+    lastQuery = e.target.value.trim();
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        setLoadMoreLoading(false);
+        fetchPage({ query: lastQuery, reset: true });
+    }, 250);
     });
 
     document.getElementById("loadMoreBtn").addEventListener("click", () => {
