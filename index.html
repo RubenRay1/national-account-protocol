@@ -97,20 +97,44 @@
     }
     .record-card.expanded .record-content { padding: 1.5rem; max-height: none; }
 
-    .field-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; align-items: start; }
+    /* ==============================
+       ALIGNMENT FIX (CHANGED)
+       - Make each Q/A pair a "row"
+       - Border goes on the row so it spans both columns
+    ============================== */
+
+    .field-grid {
+      display: grid;
+      gap: 0; /* rows manage spacing */
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 0.75rem;
+      align-items: start;
+      border-bottom: 1px solid #f0f0f0; /* one clean line across both columns */
+      padding: 0.75rem 0;               /* row padding */
+    }
+
+    .field-row:last-child {
+      border-bottom: none; /* optional */
+    }
+
     .field-label {
       font-weight: 600;
       color: #1F4788;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #f0f0f0;
       font-size: 0.9rem;
+      padding: 0;           /* moved to row */
+      border-bottom: none;  /* IMPORTANT: remove per-cell divider */
     }
+
     .field-value {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 0;           /* moved to row */
+      border-bottom: none;  /* IMPORTANT: remove per-cell divider */
       word-break: break-word;
       line-height: 1.5;
-      white-space: pre-wrap; /* ✅ keeps newlines readable */
+      white-space: pre-wrap; /* keeps newlines readable */
     }
 
     .no-results {
@@ -452,25 +476,25 @@
     }
 
     function updateStatsRange() {
-    const stats = document.getElementById("stats");
-    const loaded = allData.length;
+      const stats = document.getElementById("stats");
+      const loaded = allData.length;
 
-    // if searching and API returned match count
-    if (lastQuery && typeof matchedTotal === "number") {
+      // if searching and API returned match count
+      if (lastQuery && typeof matchedTotal === "number") {
         const start = loaded > 0 ? 1 : 0;
         const end = loaded;
         stats.textContent = `Showing ${start}–${end} of ${matchedTotal} matches`;
         return;
-    }
+      }
 
-    // default
-    if (typeof totalCount === "number") {
+      // default
+      if (typeof totalCount === "number") {
         const start = loaded > 0 ? 1 : 0;
         const end = loaded;
         stats.textContent = `Showing ${start}–${end} of ~${totalCount} records`;
-    } else {
+      } else {
         stats.textContent = `Loaded ${loaded} records`;
-    }
+      }
     }
 
     function updateStats() {
@@ -529,7 +553,6 @@
           const originalKey = keyMap.get(normalizedLabel);
 
           if (!originalKey) return; // field not present in this record
-
           if (excludedNormalizedKeys.has(normalizedLabel)) return;
 
           const value = record[originalKey];
@@ -546,10 +569,16 @@
           ) {
             return;
           }
-          
+
+          /* ==============================
+             ALIGNMENT FIX (CHANGED)
+             wrap each label/value pair in .field-row
+          ============================== */
           fieldsHtml += `
-            <div class="field-label">${prettyLabel(label)}</div>
-            <div class="field-value">${str}</div>
+            <div class="field-row">
+              <div class="field-label">${prettyLabel(label)}</div>
+              <div class="field-value">${str}</div>
+            </div>
           `;
         });
 
