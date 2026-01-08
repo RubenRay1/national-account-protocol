@@ -110,31 +110,73 @@
 
     .field-row {
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: 1fr 2fr;  /* DESKTOP/TABLET default stays the same */
       gap: 0.75rem;
       align-items: start;
-      border-bottom: 1px solid #f0f0f0; /* one clean line across both columns */
-      padding: 0.75rem 0;               /* row padding */
+      border-bottom: 1px solid #f0f0f0;
+      padding: 0.75rem 0;
     }
 
     .field-row:last-child {
-      border-bottom: none; /* optional */
+      border-bottom: none;
     }
 
     .field-label {
       font-weight: 600;
       color: #1F4788;
       font-size: 0.9rem;
-      padding: 0;           /* moved to row */
-      border-bottom: none;  /* IMPORTANT: remove per-cell divider */
+      padding: 0;
+      border-bottom: none;
     }
 
     .field-value {
-      padding: 0;           /* moved to row */
-      border-bottom: none;  /* IMPORTANT: remove per-cell divider */
-      word-break: break-word;
+      padding: 0;
+      border-bottom: none;
       line-height: 1.5;
       white-space: pre-wrap; /* keeps newlines readable */
+
+      /* ✅ Fix ugly mid-word breaks on mobile Safari / narrow columns */
+      word-break: normal;        /* do NOT split words mid-word by default */
+      overflow-wrap: anywhere;   /* still prevents overflow for long strings/URLs */
+      hyphens: auto;
+    }
+
+    /* ==============================
+       MOBILE-ONLY LAYOUT (NEW)
+       - Stack label above value
+       - Tighten spacing
+       - Prevent the "every word on a new line" look
+       - DOES NOT AFFECT DESKTOP
+    ============================== */
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .search-section { padding: 1.25rem; }
+
+      .record-header {
+        padding: 1rem;
+        font-size: 1.05rem;
+      }
+
+      .record-card.expanded .record-content {
+        padding: 1rem;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr; /* ✅ stack */
+        gap: 0.35rem;
+        padding: 0.9rem 0;
+      }
+
+      .field-label {
+        font-size: 0.95rem;
+        line-height: 1.25;
+      }
+
+      .field-value {
+        font-size: 1rem;
+        line-height: 1.45;
+        color: #444;
+      }
     }
 
     .no-results {
@@ -417,17 +459,16 @@
     // HELPERS
     // ==============================
 
-    // ✅ Normalizes keys so we match weird JSON keys like "Brands         " or extra newlines
     function normalizeKey(s) {
       return String(s ?? "")
         .replace(/\r\n/g, "\n")
-        .replace(/\s+/g, " ")   // collapse whitespace
-        .replace(/\s*\n\s*/g, "\n") // keep \n but remove spaces around it
+        .replace(/\s+/g, " ")
+        .replace(/\s*\n\s*/g, "\n")
         .trim();
     }
 
     function buildKeyMap(record) {
-      const map = new Map(); // normalized -> original
+      const map = new Map();
       Object.keys(record || {}).forEach(k => {
         map.set(normalizeKey(k), k);
       });
@@ -435,17 +476,12 @@
     }
 
     function getCompanyTitle(record) {
-      // Prefer "Company" (short) then fall back to "Company (Full Legal Name)"
       return (
         record.Company ||
         record.company ||
         record["Company (Full Legal Name)"] ||
         "Company"
       );
-    }
-
-    function setLoading(message) {
-      document.getElementById("content").innerHTML = `<div class="loading">${message}</div>`;
     }
 
     function renderSkeleton() {
@@ -479,7 +515,6 @@
       const stats = document.getElementById("stats");
       const loaded = allData.length;
 
-      // if searching and API returned match count
       if (lastQuery && typeof matchedTotal === "number") {
         const start = loaded > 0 ? 1 : 0;
         const end = loaded;
@@ -487,7 +522,6 @@
         return;
       }
 
-      // default
       if (typeof totalCount === "number") {
         const start = loaded > 0 ? 1 : 0;
         const end = loaded;
@@ -501,7 +535,6 @@
       updateStatsRange();
     }
 
-    // ✅ Keep labels as-is (Excel headers), just clean spacing
     function prettyLabel(label) {
       return normalizeKey(label);
     }
@@ -522,7 +555,6 @@
         return;
       }
 
-      // ✅ sort by the same title field the cards use
       records = [...records].sort((a, b) =>
         String(getCompanyTitle(a)).localeCompare(String(getCompanyTitle(b)))
       );
@@ -530,16 +562,13 @@
       const grid = document.createElement("div");
       grid.className = "records-grid";
 
-      records.forEach((record, index) => {
+      records.forEach((record) => {
         const card = document.createElement("div");
         card.className = "record-card";
 
         const title = getCompanyTitle(record);
-
-        // Build a map so FIELD_ORDER matches record keys even if spacing/newlines differ
         const keyMap = buildKeyMap(record);
 
-        // ✅ Prevent duplicates in the body (the title already shows these)
         const excludedNormalizedKeys = new Set([
           normalizeKey("Company"),
           normalizeKey("company")
@@ -547,12 +576,11 @@
 
         let fieldsHtml = "";
 
-        // ✅ Render strictly in Excel order
         FIELD_ORDER.forEach(label => {
           const normalizedLabel = normalizeKey(label);
           const originalKey = keyMap.get(normalizedLabel);
 
-          if (!originalKey) return; // field not present in this record
+          if (!originalKey) return;
           if (excludedNormalizedKeys.has(normalizedLabel)) return;
 
           const value = record[originalKey];
@@ -570,10 +598,6 @@
             return;
           }
 
-          /* ==============================
-             ALIGNMENT FIX (CHANGED)
-             wrap each label/value pair in .field-row
-          ============================== */
           fieldsHtml += `
             <div class="field-row">
               <div class="field-label">${prettyLabel(label)}</div>
@@ -621,7 +645,6 @@
         if (nextKey) params.set("lastKey", JSON.stringify(nextKey));
 
         const url = `${READ_API_BASE_URL}?${params.toString()}`;
-
         const res = await fetch(url, { method: "GET", mode: "cors" });
 
         if (!res.ok) {
