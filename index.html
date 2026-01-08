@@ -536,8 +536,17 @@
           if (value === null || value === undefined) return;
 
           const str = Array.isArray(value) ? value.join(", ") : String(value);
-          if (str.trim() === "") return;
+          const normalizedValue = str.trim().toLowerCase();
 
+          if (
+            normalizedValue === "" ||
+            normalizedValue === "n/a" ||
+            normalizedValue === "na" ||
+            normalizedValue === "n//a"
+          ) {
+            return;
+          }
+          
           fieldsHtml += `
             <div class="field-label">${prettyLabel(label)}</div>
             <div class="field-value">${str}</div>
