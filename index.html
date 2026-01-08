@@ -97,30 +97,20 @@
     }
     .record-card.expanded .record-content { padding: 1.5rem; max-height: none; }
 
-    .field-grid {
-    display: flex;
-    flex-direction: column;
-    }
-
-    .field-row {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
-    }
-
+    .field-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; align-items: start; }
     .field-label {
-    font-weight: 600;
-    color: #1F4788;
-    font-size: 0.9rem;
+      font-weight: 600;
+      color: #1F4788;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
     }
-
     .field-value {
-    word-break: break-word;
-    line-height: 1.5;
-    white-space: pre-wrap;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      word-break: break-word;
+      line-height: 1.5;
+      white-space: pre-wrap; /* ✅ keeps newlines readable */
     }
 
     .no-results {
@@ -556,12 +546,10 @@
           ) {
             return;
           }
-
+          
           fieldsHtml += `
-            <div class="field">
-              <div class="field-label">${prettyLabel(label)}</div>
-              <div class="field-value">${str}</div>
-            </div>
+            <div class="field-label">${prettyLabel(label)}</div>
+            <div class="field-value">${str}</div>
           `;
         });
 
