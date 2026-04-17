@@ -8,331 +8,372 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Sage UI test', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1F4788 0%, #2B73B5 100%);
-      color: #f80505;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+      background: #0c1a2e;
+      background: linear-gradient(170deg, #0c1a2e 0%, #14365e 35%, #1b5590 70%, #2470b0 100%);
+      background-attachment: fixed;
+      color: #2d3748;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
+
     .header {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       color: white;
-      padding: 2rem 0;
+      padding: 1.25rem 1.5rem 1.4rem;
       text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 600; }
-    .header p { font-size: 1.1rem; opacity: 0.9; }
+    .header h1 {
+      font-size: 1.55rem;
+      margin-bottom: 0.15rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    .header p {
+      font-size: 0.82rem;
+      opacity: 0.55;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+    }
 
+    /* TAB BAR */
+    .tab-bar {
+      display: flex;
+      margin-bottom: 0.75rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: 11px;
+      padding: 3px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.6rem 0.7rem;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-align: center;
+      line-height: 1.35;
+      white-space: normal;
+      word-break: break-word;
+    }
+    .tab-btn:hover {
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.06);
+    }
+    .tab-btn.active {
+      background: white;
+      color: #14365e;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+      font-weight: 700;
+    }
+
+    /* SEARCH */
     .search-section {
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      margin-bottom: 1.25rem;
+      background: white;
+      padding: 1rem 1.15rem;
+      border-radius: 11px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.05);
+      margin-bottom: 0.75rem;
     }
-
+    .search-input-wrap { position: relative; width: 100%; }
     .search-box {
       width: 100%;
-      padding: 1rem;
-      border: 2px solid #e1e5e9;
-      border-radius: 12px;
-      font-size: 16px;
-      margin-bottom: 1rem;
-      transition: border-color 0.3s ease;
+      padding: 0.65rem 0.85rem;
+      padding-right: 2.4rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 0.5rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background: #f7f8fa;
+      color: #2d3748;
     }
     .search-box:focus {
       outline: none;
-      border-color: #2B73B5;
-      box-shadow: 0 0 0 3px rgba(43,115,181,0.1);
+      border-color: #2470b0;
+      box-shadow: 0 0 0 3px rgba(36,112,176,0.08);
+      background: white;
     }
+    .search-box::placeholder { color: #a0aec0; font-size: 13px; }
 
-    /* ✅ NEW: wrapper for input + clear button */
-    .search-input-wrap {
-      position: relative;
-      width: 100%;
-    }
-
-    /* ✅ NEW: make room for the X button */
-    .search-input-wrap .search-box {
-      padding-right: 2.75rem;
-    }
-
-    /* ✅ NEW: clear (X) button */
     .clear-btn {
       position: absolute;
-      right: 0.85rem;
-      top: 41%;
+      right: 0.55rem;
+      top: 34%;
       transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
+      width: 22px;
+      height: 22px;
       border: none;
       border-radius: 999px;
       background: transparent;
-      color: #666;
-      font-size: 22px;
+      color: #a0aec0;
+      font-size: 16px;
       line-height: 1;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.1s ease;
+    }
+    .clear-btn:hover { background: #edf2f7; color: #718096; }
+    .clear-btn:focus { outline: none; box-shadow: 0 0 0 2px rgba(36,112,176,0.12); }
+
+    .stats {
+      text-align: center;
+      color: #a0aec0;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.015em;
     }
 
-    .clear-btn:hover {
-      background: rgba(0, 0, 0, 0.06);
-    }
-
-    .clear-btn:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(43,115,181,0.2);
-    }
-
-    .stats { text-align:center; color:#666; margin-bottom: 1rem; font-weight: 500; }
-
+    /* LOADING / SKELETON */
     .loading {
       text-align: center;
-      padding: 3rem;
-      color: #666;
-      background: rgba(255,255,255,0.95);
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 2.5rem;
+      color: #a0aec0;
+      background: white;
+      border-radius: 11px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.05);
+      font-size: 0.85rem;
     }
-
-    .records-grid { display: grid; gap: 1.5rem; }
-
-    .record-card {
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      overflow: hidden;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255,255,255,0.2);
-      cursor: pointer;
-    }
-    .record-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-
-    .record-header {
-      background: linear-gradient(135deg, #1F4788 0%, #2B73B5 100%);
-      color: white;
-      padding: 1.5rem;
-      font-weight: 600;
-      font-size: 1.2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .expand-icon { font-size: 1.5rem; transition: transform 0.3s ease; }
-    .record-card.expanded .expand-icon { transform: rotate(180deg); }
-
-    .record-content {
-      padding: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    .record-card.expanded .record-content { padding: 1.5rem; max-height: none; }
-
-    /* ==============================
-       ALIGNMENT FIX (CHANGED)
-       - Make each Q/A pair a "row"
-       - Border goes on the row so it spans both columns
-    ============================== */
-
-    .field-grid {
-      display: grid;
-      gap: 0; /* rows manage spacing */
-    }
-
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 2fr;  /* DESKTOP/TABLET default stays the same */
-      gap: 0.75rem;
-      align-items: start;
-      border-bottom: 1px solid #f0f0f0;
-      padding: 0.75rem 0;
-    }
-
-    .field-row:last-child {
-      border-bottom: none;
-    }
-
-    .field-label {
-      font-weight: 600;
-      color: #1F4788;
-      font-size: 0.9rem;
-      padding: 0;
-      border-bottom: none;
-    }
-
-    .field-value {
-      padding: 0;
-      border-bottom: none;
-      line-height: 1.5;
-      white-space: pre-wrap; /* keeps newlines readable */
-
-      /* ✅ Fix ugly mid-word breaks on mobile Safari / narrow columns */
-      word-break: normal;        /* do NOT split words mid-word by default */
-      overflow-wrap: anywhere;   /* still prevents overflow for long strings/URLs */
-      hyphens: auto;
-    }
-
-    /* ==============================
-       MOBILE-ONLY LAYOUT (NEW)
-       - Stack label above value
-       - Tighten spacing
-       - Prevent the "every word on a new line" look
-       - DOES NOT AFFECT DESKTOP
-    ============================== */
-    @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      .search-section { padding: 1.25rem; }
-
-      .record-header {
-        padding: 1rem;
-        font-size: 1.05rem;
-      }
-
-      .record-card.expanded .record-content {
-        padding: 1rem;
-      }
-
-      .field-row {
-        grid-template-columns: 1fr; /* ✅ stack */
-        gap: 0.35rem;
-        padding: 0.9rem 0;
-      }
-
-      .field-label {
-        font-size: 0.95rem;
-        line-height: 1.25;
-      }
-
-      .field-value {
-        font-size: 1rem;
-        line-height: 1.45;
-        color: #444;
-      }
-    }
-
-    .no-results {
-      text-align: center;
-      padding: 3rem;
-      color: #666;
-      background: rgba(255,255,255,0.95);
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    }
-
-    .load-more-wrap { display:flex; justify-content:center; margin: 1.25rem 0 2rem 0; }
-    .load-more-btn {
-      background: #F47920;
-      color: white;
-      border: none;
-      padding: 0.9rem 1.4rem;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 700;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-    .load-more-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .bms-badge {
-      display: inline-block;
-      background: #F47920;
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-left: 1rem;
-    }
-
-    .auth-container {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #1F4788 0%, #2B73B5 100%);
-    }
-    .auth-card {
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      padding: 3rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      text-align:center;
-      max-width: 400px;
-      width: 90%;
-    }
-    .auth-button {
-      background: linear-gradient(135deg, #1F4788 0%, #2B73B5 100%);
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-      margin-top: 1rem;
-    }
-    .auth-button:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(31,71,136,0.3); }
-
-    .user-info {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      color: white;
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .logout-btn {
-      background: #F47920;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    #logoutBtn { display: none !important; }
-
     .skeleton-card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 16px;
-      padding: 1.25rem;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      overflow: hidden;
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
     .sk-line {
-      height: 14px;
-      border-radius: 8px;
-      margin: 10px 0;
-      background: linear-gradient(90deg, #ececec, #f5f5f5, #ececec);
+      height: 10px;
+      border-radius: 5px;
+      margin: 8px 0;
+      background: linear-gradient(90deg, #edf2f7, #f7fafc, #edf2f7);
       background-size: 200% 100%;
-      animation: shimmer 1.2s infinite;
+      animation: shimmer 1.4s ease infinite;
     }
     .sk-line.w40 { width: 40%; }
     .sk-line.w60 { width: 60%; }
     .sk-line.w80 { width: 80%; }
-
     @keyframes shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
 
-    .hidden { display:none; }
+    /* RECORD CARDS */
+    .records-grid { display: grid; gap: 0.45rem; }
+
+    .record-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 6px rgba(0,0,0,0.03);
+      overflow: hidden;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+    }
+    .record-card:hover {
+      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+      transform: translateY(-1px);
+    }
+
+    .record-header {
+      background: linear-gradient(135deg, #14365e 0%, #1b5590 50%, #2470b0 100%);
+      color: white;
+      padding: 0.8rem 1rem;
+      font-weight: 600;
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: 0.005em;
+    }
+    .record-header-title { flex: 1; min-width: 0; }
+
+    .expand-icon {
+      font-size: 0.95rem;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .record-card.expanded .expand-icon { transform: rotate(180deg); opacity: 1; }
+
+    .record-content {
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .record-card.expanded .record-content {
+      padding: 1rem 1.15rem;
+      max-height: none;
+    }
+
+    /* FIELD GRID */
+    .field-grid { display: grid; gap: 0; }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 2.5fr;
+      gap: 0.65rem;
+      align-items: baseline;
+      border-bottom: 1px solid #f0f3f7;
+      padding: 0.55rem 0;
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-label {
+      font-weight: 600;
+      color: #14365e;
+      font-size: 0.74rem;
+      line-height: 1.45;
+      letter-spacing: 0.01em;
+    }
+    .field-value {
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+      color: #4a5568;
+      font-size: 0.84rem;
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .header { padding: 1rem 0.75rem 1.1rem; }
+      .header h1 { font-size: 1.2rem; }
+      .header p { font-size: 0.75rem; }
+      .container { padding: 0.6rem; }
+      .tab-bar { border-radius: 9px; padding: 3px; }
+      .tab-btn { font-size: 0.72rem; padding: 0.5rem 0.35rem; border-radius: 7px; }
+      .search-section { padding: 0.75rem; border-radius: 9px; }
+      .search-box { padding: 0.6rem 0.7rem; padding-right: 2.1rem; font-size: 14px; border-radius: 7px; }
+      .records-grid { gap: 0.35rem; }
+      .record-card { border-radius: 9px; }
+      .record-header { padding: 0.7rem 0.85rem; font-size: 0.85rem; }
+      .record-card.expanded .record-content { padding: 0.8rem; }
+      .field-row { grid-template-columns: 1fr; gap: 0.12rem; padding: 0.55rem 0; }
+      .field-label { font-size: 0.78rem; color: #1b5590; }
+      .field-value { font-size: 0.85rem; line-height: 1.5; color: #4a5568; }
+    }
+
+    /* MISC */
+    .no-results {
+      text-align: center;
+      padding: 2.5rem;
+      color: #a0aec0;
+      background: white;
+      border-radius: 11px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 4px 14px rgba(0,0,0,0.05);
+      font-size: 0.85rem;
+    }
+    .load-more-wrap { display: flex; justify-content: center; margin: 0.75rem 0 2rem 0; }
+    .load-more-btn {
+      background: linear-gradient(135deg, #d96a0a 0%, #F47920 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      box-shadow: 0 2px 6px rgba(244,121,32,0.2);
+    }
+    .load-more-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(244,121,32,0.25); }
+    .load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .bms-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #d96a0a 0%, #F47920 100%);
+      color: white;
+      padding: 0.12rem 0.5rem;
+      border-radius: 20px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* AUTH */
+    .auth-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(170deg, #0c1a2e 0%, #14365e 35%, #1b5590 70%, #2470b0 100%);
+    }
+    .auth-card {
+      background: white;
+      padding: 2.25rem 1.75rem;
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.06);
+      text-align: center;
+      max-width: 350px;
+      width: 90%;
+    }
+    .auth-card h1 { color: #14365e; font-size: 1.3rem; font-weight: 700; }
+    .auth-button {
+      background: linear-gradient(135deg, #14365e 0%, #1b5590 50%, #2470b0 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      width: 100%;
+      margin-top: 1rem;
+      box-shadow: 0 2px 6px rgba(20,54,94,0.18);
+    }
+    .auth-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(20,54,94,0.25);
+    }
+    .user-info {
+      background: rgba(255,255,255,0.05);
+      color: white;
+      padding: 0.45rem 0.85rem;
+      border-radius: 7px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.7;
+    }
+    .logout-btn {
+      background: #F47920;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    #logoutBtn { display: none !important; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -355,27 +396,17 @@
     </div>
 
     <div class="container">
-      <div class="search-section">
-        <!-- ✅ NEW: input wrapper + clear button -->
-        <div class="search-input-wrap">
-          <input
-            type="text"
-            id="searchBox"
-            class="search-box"
-            placeholder="Search (Company)..."
-            autocomplete="off"
-          />
-          <button
-            type="button"
-            id="clearSearchBtn"
-            class="clear-btn hidden"
-            aria-label="Clear search"
-            title="Clear"
-          >
-            ×
-          </button>
-        </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-sheet="National Account Protocols">National Account Protocols</button>
+        <button class="tab-btn" data-sheet="FCSRMC - Individual Colleges">FCSRMC - Individual Colleges</button>
+        <button class="tab-btn" data-sheet="Vendor Portals">Vendor Portals</button>
+      </div>
 
+      <div class="search-section">
+        <div class="search-input-wrap">
+          <input type="text" id="searchBox" class="search-box" placeholder="Search (Company)..." autocomplete="off" />
+          <button type="button" id="clearSearchBtn" class="clear-btn hidden" aria-label="Clear search" title="Clear">×</button>
+        </div>
         <div id="stats" class="stats">Loading data...</div>
       </div>
 
@@ -388,67 +419,12 @@
   </div>
 
   <script>
-    // ==============================
     // CONFIG
-    // ==============================
     const READ_API_BASE_URL = "https://joggcs6iisqlsyjjxxebho7e540yajvo.lambda-url.us-east-1.on.aws/";
     const PAGE_SIZE = 50;
 
-    // ✅ EXACT Excel column order (left → right), rendered top → bottom in the app
-    const FIELD_ORDER = [
-      "Company (Full Legal Name)",
-      "Industry",
-      "Customer Corporate Office Address",
-      "Customer Contacts",
-      "BMS Cat Account Manager",
-      "Agreement Type\n(RSA, MSA, Handshake)",
-      "Brands",
-      "Local Marketing Direction",
-      "Pricing/Rate Schedule\n***YOU MUST SPECIFY THE YEAR AS THERE ARE DIFFERENT RATE SCHEDULES WITH THE SAME NAME, BUT DIFFERENT YEAR!",
-      "Rebate/Discount/Fee & General Agreement Details",
-      "Reason Why Customer is not under Preferred 2024 Rate Schedule (If Customer is currently under Preferred 2024 Rate Schedule, list \"N/A\")",
-      "National Adjuster",
-      "Chase Instructions",
-      "Key Differences",
-      "WHO should the Project Updates be sent to?",
-      "WHAT should be included in the Project Updates?",
-      "WHEN should the Project Updates be sent?",
-      "WHERE should the Project Updates be sent?",
-      "WHO should provide the Work Authorization?",
-      "WHAT type of Work Authorization should be obtained?",
-      "WHEN should the Work Authorization be obtained?",
-      "WHERE should the Work Authorization be sent?",
-      "WHO should the Scope of Work/Estimate be sent to?",
-      "WHAT should be included in the Scope of Work/Estimate?",
-      "WHEN should the Scope of Work/Estimate be sent?",
-      "WHERE should the Scope of Work/Estimate be sent?",
-      "WHO should sign our SOWC/COC/Work Complete Form?",
-      "WHAT type of SOWC/COC/Work Complete Form should be obtained?",
-      "WHEN should the SOWC/COC/Work Complete Form be obtained?",
-      "WHERE should the SOWC/COC/Work Complete Form be sent?",
-      "WHO should create the Invoice Packet?",
-      "WHAT should be included when the Invoice Packet is created?",
-      "WHEN should the Invoice Packet be created?",
-      "WHERE should the Invoice Packet be sent once it's created?",
-      "WHO should send the completed Invoice Packet to the Customer?",
-      "WHAT should be included with the completed Invoice Packet to the Customer?",
-      "WHEN should the completed Invoice Packet be sent to the Customer?",
-      "WHERE should the completed Invoice Packet be sent?",
-      "Payment Terms",
-      "WHO should attempt initial collection?",
-      "WHAT should be sent to attempt initial collection?",
-      "WHEN should the initial collection take place?",
-      "WHERE should the initial collection be directed to?",
-      "WHO should attempt secondary collection?",
-      "WHAT should be sent to attempt secondary collection?",
-      "WHEN should the secondary collection take place?",
-      "WHERE should the secondary collection be directed to?",
-      "WHO should attempt final collection?",
-      "WHAT should be sent to attempt final collection?",
-      "WHEN should the final collection take place?",
-      "WHERE should the final collection be directed to?",
-      "Specific Account Protocols"
-    ];
+    // Column order — loaded dynamically from the API per sheet
+    let FIELD_ORDER = [];
 
     // ==============================
     // STATE
@@ -459,26 +435,73 @@
     let isLoading = false;
     let totalCount = null;
     let matchedTotal = null;
+    let activeSheet = "National Account Protocols";
 
     // ==============================
-    // AUTH (unchanged)
+    // AUTH
     // ==============================
+    const COGNITO_DOMAIN = "https://national-account-protocol.auth.us-east-1.amazoncognito.com";
+    const CLIENT_ID = "7si5kk2t9t24nrtgkumc2n6ops";
+    const REDIRECT_URI = window.location.origin + "/";
+
+    function decodeJwtPayload(token) {
+      try {
+        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(atob(base64));
+      } catch (e) { return null; }
+    }
+
+    function displayUserInfo(idToken) {
+      const payload = decodeJwtPayload(idToken);
+      if (!payload) return;
+      const name = payload.name || payload.email || payload["cognito:username"] || "Authenticated User";
+      document.getElementById("userEmail").textContent = name;
+    }
+
+    function parseHashParams() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) return null;
+      const params = new URLSearchParams(hash);
+      return params.get("id_token") ? params : null;
+    }
+
     async function checkAuthState() {
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
+        // Check for tokens in URL hash (implicit grant)
+        const hashParams = parseHashParams();
 
-        if (code) {
-          showMainApp();
-          document.getElementById("userEmail").textContent = "Authenticated User";
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } else {
-          const token = localStorage.getItem("cognitoToken");
-          if (token) {
-            showMainApp();
-            document.getElementById("userEmail").textContent = "Authenticated User";
+        if (hashParams) {
+          const idToken = hashParams.get("id_token");
+          if (idToken) {
+            localStorage.setItem("cognitoIdToken", idToken);
+            localStorage.setItem("cognitoToken", "authenticated");
+            displayUserInfo(idToken);
           } else {
-            showAuthScreen();
+            localStorage.setItem("cognitoToken", "authenticated");
+            document.getElementById("userEmail").textContent = "Authenticated User";
+          }
+          // Clear the hash from the URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showMainApp();
+        } else {
+          // Also handle legacy code= flow in case it's still in the URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const code = urlParams.get("code");
+          if (code) {
+            localStorage.setItem("cognitoToken", "authenticated");
+            document.getElementById("userEmail").textContent = "Authenticated User";
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showMainApp();
+          } else {
+            const token = localStorage.getItem("cognitoToken");
+            if (token) {
+              const idToken = localStorage.getItem("cognitoIdToken");
+              if (idToken) { displayUserInfo(idToken); }
+              else { document.getElementById("userEmail").textContent = "Authenticated User"; }
+              showMainApp();
+            } else {
+              showAuthScreen();
+            }
           }
         }
       } catch (e) {
@@ -490,6 +513,7 @@
       document.getElementById("authScreen").classList.remove("hidden");
       document.getElementById("mainApp").classList.add("hidden");
       localStorage.removeItem("cognitoToken");
+      localStorage.removeItem("cognitoIdToken");
     }
 
     function showMainApp() {
@@ -501,25 +525,26 @@
 
     document.getElementById("loginBtn").addEventListener("click", () => {
       window.location.href =
-        "https://national-account-protocol.auth.us-east-1.amazoncognito.com/oauth2/authorize" +
+        COGNITO_DOMAIN + "/oauth2/authorize" +
         "?identity_provider=OktaNAP" +
-        "&client_id=7si5kk2t9t24nrtgkumc2n6ops" +
+        "&client_id=" + CLIENT_ID +
         "&response_type=code" +
         "&scope=email+openid+profile" +
-        "&redirect_uri=" + encodeURIComponent(window.location.origin + "/");
+        "&redirect_uri=" + encodeURIComponent(REDIRECT_URI);
     });
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("cognitoToken");
+      localStorage.removeItem("cognitoIdToken");
       window.location.href =
-        "https://national-account-protocol.auth.us-east-1.amazoncognito.com/logout" +
-        "?client_id=7si5kk2t9t24nrtgkumc2n6ops" +
-        "&logout_uri=" + encodeURIComponent(window.location.origin + "/");
+        COGNITO_DOMAIN + "/logout" +
+        "?client_id=" + CLIENT_ID +
+        "&logout_uri=" + encodeURIComponent(REDIRECT_URI);
     });
 
     // ==============================
     // HELPERS
     // ==============================
-
     function normalizeKey(s) {
       return String(s ?? "")
         .replace(/\r\n/g, "\n")
@@ -541,6 +566,7 @@
         record.Company ||
         record.company ||
         record["Company (Full Legal Name)"] ||
+        record["Portal Name"] ||
         "Company"
       );
     }
@@ -592,13 +618,8 @@
       }
     }
 
-    function updateStats() {
-      updateStatsRange();
-    }
-
-    function prettyLabel(label) {
-      return normalizeKey(label);
-    }
+    function updateStats() { updateStatsRange(); }
+    function prettyLabel(label) { return normalizeKey(label); }
 
     function toggleCard(header) {
       const card = header.parentElement;
@@ -632,12 +653,18 @@
 
         const excludedNormalizedKeys = new Set([
           normalizeKey("Company"),
-          normalizeKey("company")
+          normalizeKey("company"),
+          normalizeKey("SourceSheet"),
+          normalizeKey("CompanyName")
         ]);
 
         let fieldsHtml = "";
 
-        FIELD_ORDER.forEach(label => {
+        const fieldList = FIELD_ORDER.length > 0
+          ? FIELD_ORDER
+          : Object.keys(record).filter(k => !excludedNormalizedKeys.has(normalizeKey(k)));
+
+        fieldList.forEach(label => {
           const normalizedLabel = normalizeKey(label);
           const originalKey = keyMap.get(normalizedLabel);
 
@@ -685,7 +712,7 @@
     }
 
     // ==============================
-    // API CALL (server-side paging)
+    // API CALL
     // ==============================
     async function fetchPage({ query, reset }) {
       if (isLoading) return;
@@ -703,6 +730,7 @@
         const params = new URLSearchParams();
         if (query) params.set("q", query);
         params.set("limit", String(PAGE_SIZE));
+        params.set("sheet", activeSheet);
         if (nextKey) params.set("lastKey", JSON.stringify(nextKey));
 
         const url = `${READ_API_BASE_URL}?${params.toString()}`;
@@ -715,6 +743,10 @@
 
         const payload = await res.json();
         matchedTotal = (typeof payload.matchedTotal === "number") ? payload.matchedTotal : null;
+
+        if (Array.isArray(payload.columns) && payload.columns.length > 0) {
+          FIELD_ORDER = payload.columns;
+        }
 
         const items = Array.isArray(payload.items) ? payload.items : [];
         nextKey = payload.nextKey || null;
@@ -750,8 +782,6 @@
     }
 
     let searchTimer = null;
-
-    // ✅ NEW: search box + clear button refs & helpers
     const searchBoxEl = document.getElementById("searchBox");
     const clearBtnEl = document.getElementById("clearSearchBtn");
 
@@ -768,24 +798,16 @@
       lastQuery = "";
       syncClearButton();
       searchBoxEl.focus();
-
-      // Trigger same behavior as typing so your existing debounce/search runs
       searchBoxEl.dispatchEvent(new Event("input", { bubbles: true }));
     });
 
-    // Optional: ESC clears
     searchBoxEl.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        clearBtnEl.click();
-      }
+      if (e.key === "Escape") clearBtnEl.click();
     });
 
-    // Search input handler (updated to sync X visibility)
     searchBoxEl.addEventListener("input", (e) => {
       syncClearButton();
-
       lastQuery = e.target.value.trim();
-
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         setLoadMoreLoading(false);
@@ -798,9 +820,21 @@
       fetchPage({ query: lastQuery, reset: false });
     });
 
-    // ✅ initialize visibility on load
-    syncClearButton();
+    // Tab switching
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.sheet === activeSheet) return;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeSheet = btn.dataset.sheet;
+        searchBoxEl.value = "";
+        lastQuery = "";
+        syncClearButton();
+        fetchPage({ query: "", reset: true });
+      });
+    });
 
+    syncClearButton();
     checkAuthState();
   </script>
 </body>

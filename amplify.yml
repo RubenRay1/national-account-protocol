@@ -8,10 +8,10 @@ frontend:
   phases:
     preBuild:
       commands:
-        - pip install -r requirements.txt
+        - echo "No preBuild needed"
     build:
       commands:
-        - echo "Building Friday BMS Flask application"
+        - echo "Static site - no build needed"
     postBuild:
       commands:
         - echo "Build completed successfully"
