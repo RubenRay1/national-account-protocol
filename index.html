@@ -564,10 +564,11 @@
 
     function getCompanyTitle(record) {
       return (
-        record.Company ||
-        record.company ||
+        record.CompanyName ||
         record["Company (Full Legal Name)"] ||
         record["Portal Name"] ||
+        record["Company Name"] ||
+        record.Company ||
         "Company"
       );
     }
