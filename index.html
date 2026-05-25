@@ -424,6 +424,9 @@
     const READ_API_BASE_URL = "https://joggcs6iisqlsyjjxxebho7e540yajvo.lambda-url.us-east-1.on.aws/";
     const PAGE_SIZE = 50;
 
+    // Sheets that load all records at once (no pagination)
+    const LOAD_ALL_SHEETS = ["National Account Protocols"];
+
     // Column order — loaded dynamically from the API per sheet
     let FIELD_ORDER = [];
 
@@ -731,7 +734,8 @@
 
         const params = new URLSearchParams();
         if (query) params.set("q", query);
-        params.set("limit", String(PAGE_SIZE));
+        const limit = LOAD_ALL_SHEETS.includes(activeSheet) ? 9999 : PAGE_SIZE;
+        params.set("limit", String(limit));
         params.set("sheet", activeSheet);
         if (nextKey) params.set("lastKey", JSON.stringify(nextKey));
 
